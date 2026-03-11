@@ -1,0 +1,19 @@
+FROM node:20-slim AS builder
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN npm install
+RUN npx prisma generate
+COPY . .
+RUN npm run build
+
+FROM node:20-slim
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN npm install --production
+RUN npx prisma generate
+COPY --from=builder /app/dist ./dist
+EXPOSE 3003
+CMD ["node", "dist/index.js"]

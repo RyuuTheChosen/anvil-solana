@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+target/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+keys/
+data/
+
+# Logs
+*.log
+
+# Anchor / Solana
+.anchor/
+test-ledger/
+**/*.so
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Prisma
+cranker/prisma/*.db
+
+# Uploads
+backend/uploads/
+
+# Sensitive agent docs (keep local only)
+agent_docs/security-hardening-plan.md
+agent_docs/privy-ai-integration-plan.md
+agent_docs/x-bot-plan.md
+agent_docs/verification-multisig-plan.md
+
+# Operational scripts (may contain hardcoded addresses)
+scripts/
+
+# IDL build artifacts
+idl_*.txt
+idl_output.json
+
+# Local notes
+vanity-addy.md
+
+# Claude Code local settings
+.claude/
+
+# Internal planning docs (keep local only)
+docs/SECURITY-FIXES-PLAN.md
+docs/PLAN.md
+docs/bags-integration-plan.md
+docs/Anchor-Cranker.md
+
+# Remotion render output
+out/
+
+# Misc
+*.tsbuildinfo

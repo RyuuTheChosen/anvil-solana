@@ -1,0 +1,17 @@
+export const C = {
+  dark: "#06060b",
+  card: "#111118",
+  cardHover: "#16161f",
+  border: "#1f1f2e",
+  borderLight: "#2a2a3e",
+  green: "#00ff88",
+  greenDark: "#00cc66",
+  accent: "#7c3aed",
+  cyan: "#06b6d4",
+  pink: "#ec4899",
+  white: "#ffffff",
+  muted: "#888899",
+  text: "#e5e7eb",
+  font: "'Inter', system-ui, -apple-system, sans-serif",
+  mono: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+} as const;

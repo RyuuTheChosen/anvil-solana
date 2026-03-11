@@ -1,0 +1,19 @@
+{
+  "name": "anvil-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RyuuTheChosen/anvil-solana.git"
+  },
+  "description": "Solana protocol that aggregates creator fees from token launchpads and distributes them to top token holders",
+  "workspaces": [
+    "backend",
+    "app",
+    "cranker",
+    "vanity",
+    "chat",
+    "bot"
+  ]
+}

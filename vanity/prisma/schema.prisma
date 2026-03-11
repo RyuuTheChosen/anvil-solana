@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Vault {
+  id                  Int                  @id @default(autoincrement())
+  tokenMint           String               @unique
+  creator             String
+  feeAccount          String
+  vaultPool           String
+  name                String?
+  symbol              String?
+  metadataUri         String?
+  imageUrl            String?
+  bondingCurve        String?
+  feeSharingConfirmed Boolean              @default(false)
+  vaultCreated        Boolean              @default(false)
+  retryCount          Int                  @default(0)
+  lastRetryAt         DateTime?
+  confirmedAt         DateTime?
+  active              Boolean              @default(true)
+  consecutiveFailures Int                  @default(0)
+  lastErrorType       String?
+  pausedAt            DateTime?
+  pauseReason         String?
+  createdAt           DateTime             @default(now())
+
+  // LP Automation + Platform Fees
+  maxHolders          Int                  @default(100)     // 100-512, max holders per distribution
+  holderSplitBps      Int                  @default(5000)    // 0-10000, creator's chosen holder/LP split
+  platformFeeBps      Int                  @default(500)     // snapshot at launch (500 = 5%)
+  graduated           Boolean              @default(false)
+  graduatedAt         DateTime?
+  lpDeployed          Boolean              @default(false)
+  lpPoolKey           String?                                // PumpSwap pool pubkey
+  lpSolDeposited      BigInt               @default(0)       // cumulative SOL into LP (lamports)
+  pendingLpSol        BigInt               @default(0)       // SOL waiting for LP threshold
+  lpTokenBalance      BigInt               @default(0)       // LP tokens held
+  lpDepositedValue    BigInt               @default(0)       // SOL value at deposit time (profit calc)
+  totalPlatformFees   BigInt               @default(0)       // cumulative platform fees tracked
+  lastSweepAt         DateTime?
+
+  // Time-locked split changes
+  pendingSplitBps     Int?
+  splitProposedAt     DateTime?
+  splitEffectiveAt    DateTime?
+
+  holders             HolderBalance[]
+  distributions       DistributionRecord[]
+  lpOperations        LpOperation[]
+}
+
+model HolderBalance {
+  id           Int      @id @default(autoincrement())
+  vaultId      Int
+  wallet       String
+  balance      BigInt
+  holdingSince DateTime
+  lastUpdated  DateTime
+  vault        Vault    @relation(fields: [vaultId], references: [id])
+
+  @@unique([vaultId, wallet])
+}
+
+model DistributionRecord {
+  id             Int                @id @default(autoincrement())
+  vaultId        Int
+  epochNumber    Int
+  merkleRoot     String
+  totalAllocated BigInt
+  holderCount    Int
+  txSignature    String?
+  createdAt      DateTime           @default(now())
+  vault          Vault              @relation(fields: [vaultId], references: [id])
+  allocations    AllocationRecord[]
+
+  @@unique([vaultId, epochNumber])
+}
+
+model AllocationRecord {
+  id               Int                @id @default(autoincrement())
+  distributionId   Int
+  wallet           String
+  cumulativeAmount BigInt
+  score            Float
+  proof            String
+  distribution     DistributionRecord @relation(fields: [distributionId], references: [id])
+
+  @@unique([distributionId, wallet])
+}
+
+model LpOperation {
+  id            Int      @id @default(autoincrement())
+  vaultId       Int
+  type          String   // "DEPLOY" | "HARVEST" | "COMPOUND"
+  solAmount     BigInt   // lamports involved
+  lpTokens      BigInt   @default(0)  // LP tokens minted or burned
+  txSignatures  String[] // all TX sigs for the multi-step operation
+  status        String   // "SUCCESS" | "PARTIAL" | "FAILED"
+  error         String?  // error message if failed
+  createdAt     DateTime @default(now())
+  vault         Vault    @relation(fields: [vaultId], references: [id])
+
+  @@index([vaultId, createdAt])
+}
+
+model VanityKeypair {
+  id               Int       @id @default(autoincrement())
+  publicKey        String    @unique              // base58 pubkey (= mint address)
+  encryptedKey     String                         // AES-256-GCM encrypted 64-byte secret key
+  suffix           String                         // vanity suffix matched (e.g. "anvi1")
+  claimed          Boolean   @default(false)      // true = handed out to a /build-tx call
+  confirmedOnChain Boolean   @default(false)      // true = token creation confirmed on-chain
+  claimedAt        DateTime?                      // when claimed by /build-tx
+  createdAt        DateTime  @default(now())
+
+  @@index([claimed, suffix])
+}
